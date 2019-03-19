@@ -20,6 +20,11 @@ class SubjectMapper {
 	private Set<IRI> classes;
 	private Set<PredicateObjectMapper> predicateObjectMappers;
 
+	public Set<PredicateObjectMapper> getPredicateObjectMappers() {
+		return predicateObjectMappers;
+	}
+
+
 	SubjectMapper(
 		TermGenerator<Resource> generator,
 		Set<TermGenerator<IRI>> graphGenerators,
@@ -58,4 +63,6 @@ class SubjectMapper {
 
 		return subject;
 	}
+
+
 }
