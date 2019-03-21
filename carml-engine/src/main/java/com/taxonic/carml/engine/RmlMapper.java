@@ -5,6 +5,7 @@ import com.taxonic.carml.engine.function.Functions;
 import com.taxonic.carml.logical_source_resolver.LogicalSourceResolver;
 import com.taxonic.carml.model.*;
 import com.taxonic.carml.rdf_mapper.util.ImmutableCollectors;
+import com.taxonic.carml.util.WebStream;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -245,17 +246,19 @@ public class RmlMapper {
 
         @Override
         public Optional<String> apply(Object o) {
+            //todo
+            Optional<String> name;
+            if (o instanceof NameableStream) {
+                NameableStream stream = (NameableStream) o;
+                name = Optional.ofNullable(stream.getStreamName());
+            } else if (o instanceof WebStream) {
+                WebStream stream = (WebStream) o;
+                name = Optional.ofNullable(stream.getStreamName());
+            } else return Optional.empty();
 
-            if (!(o instanceof NameableStream)) {
-                return Optional.empty();
-            }
-
-            NameableStream stream = (NameableStream) o;
-            Optional<String> name = Optional.ofNullable(stream.getStreamName());
-            String resolved =
-                    name.isPresent() ?
-                            sourceManager.getSource(name.get()) :
-                            sourceManager.getSource(DEFAULT_STREAM_NAME);
+            String resolved = name.isPresent() ?
+                    sourceManager.getSource(name.get()) :
+                    sourceManager.getSource(DEFAULT_STREAM_NAME);
             return Optional.of(resolved);
         }
     }
@@ -270,14 +273,14 @@ public class RmlMapper {
 
         @Override
         public String apply(Object source) {
-            return
-                    resolvers.stream()
-                            .map(r -> r.apply(source))
-                            .filter(Optional::isPresent)
-                            .map(Optional::get)
-                            .findFirst()
-                            .orElseThrow(() ->
-                                    new RuntimeException(String.format("could not resolve source [%s]", source)));
+
+            return resolvers.stream()
+                    .map(r -> r.apply(source))
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .findFirst()
+                    .orElseThrow(() ->
+                            new RuntimeException(String.format("could not resolve source [%s]", source)));
         }
 
         void setSourceManager(LogicalSourceManager sourceManager) {
@@ -361,16 +364,16 @@ public class RmlMapper {
                 .collect(ImmutableCollectors.toImmutableSet());
     }
 
-    public List<Model> map(TriplesMap triplesMap, Set<TriplesMap> objectmaps) {
-        LOG.info("Mapping triples map: {}", triplesMap.getResourceName());
+    public Stream<Model> map(TriplesMap triplesMap, Set<TriplesMap> objectmaps) {
+        LOG.debug("Mapping triples map: {}", triplesMap.getResourceName());
         LOG.debug("{}", triplesMap);
         TriplesMapper<?> triplesMapper = createTriplesMapper(triplesMap); // TODO cache mapper instances
-        List<Model> models = triplesMapper.map(objectmaps.stream().map(this::createTriplesMapper).collect(Collectors.toSet()));
+        Stream<Model> models = triplesMapper.map(objectmaps.stream().map(this::createTriplesMapper).collect(Collectors.toSet()));
         return models;
     }
 
     public Model map(TriplesMap triplesMap, Model model) {
-        LOG.info("Mapping triples map: {}", triplesMap.getResourceName());
+        LOG.debug("Mapping triples map: {}", triplesMap.getResourceName());
         LOG.debug("{}", triplesMap);
         TriplesMapper<?> triplesMapper = createTriplesMapper(triplesMap); // TODO cache mapper instances
         triplesMapper.map(model);

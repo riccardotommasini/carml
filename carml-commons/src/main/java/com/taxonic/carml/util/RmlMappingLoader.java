@@ -109,9 +109,11 @@ public class RmlMappingLoader {
 						this::addTermTypes, //
 						r -> { //
 							r.addDecidableType(Rdf.Carml.Stream, NameableStream.class);
+							r.addDecidableType(Rdf.Vocals.Stream, WebStream.class);
 							r.addDecidableType(Rdf.Carml.XmlDocument, XmlSource.class);
 							r.addDecidableType(Rdf.Carml.FileSource, FileSource.class);
 							r.bindInterfaceImplementation(NameableStream.class, CarmlStream.class);
+							r.bindInterfaceImplementation(WebStream.class, VocalsWebStream.class);
 							r.bindInterfaceImplementation(XmlSource.class, CarmlXmlSource.class);
 							r.bindInterfaceImplementation(FileSource.class, CarmlFileSource.class);
 						}));

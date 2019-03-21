@@ -1,7 +1,6 @@
 package com.taxonic.carml.engine;
 
 import com.taxonic.carml.logical_source_resolver.LogicalSourceResolver;
-import com.taxonic.carml.model.TriplesMap;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.slf4j.Logger;
@@ -11,6 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 class TriplesMapper<T> {
 
@@ -47,12 +48,11 @@ class TriplesMapper<T> {
         this.predicateObjectMappers = this.subjectMapper.getPredicateObjectMappers();
     }
 
-    List<Model> map(Set<TriplesMapper> objectmaps) {
-        List<Model> models = new ArrayList<>();
+    Stream<Model> map(Set<TriplesMapper> objectmaps) {
         LOG.debug("Executing TriplesMap {} ...", name);
         Iterable<T> iter = getIterator.get();
-        iter.forEach(e -> models.add(map(e, objectmaps, new LinkedHashModel())));
-        return models;
+        Stream<T> targetStream = StreamSupport.stream(iter.spliterator(), false);
+        return targetStream.map(e -> map(e, objectmaps, new LinkedHashModel()));
     }
 
 
